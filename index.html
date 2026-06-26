@@ -173,17 +173,15 @@
 
       postsContainer.innerHTML = posts.map(post => {
         let imageUrl = 'https://via.placeholder.com/400x250?text=No+Image';
-        if (post.medium_image) {
-          imageUrl = post.medium_image;
-        } else if (post.small_image) {
-          imageUrl = post.small_image;
-        } else if (post.append) {
-          imageUrl = post.append.medium_image || post.append.small_image || imageUrl;
+        if (post.medium_image && post.medium_image.length > 0) {
+        imageUrl = post.medium_image[0].url;
+        } else if (post.small_image && post.small_image.length > 0) {
+        imageUrl = post.small_image[0].url;
         }
 
         const formattedDate = new Date(post.published_at || post.created_at).toLocaleDateString('id-ID', {
           year: 'numeric',
-          month: 'LONG',
+          month: 'long',
           day: 'numeric'
         });
 
