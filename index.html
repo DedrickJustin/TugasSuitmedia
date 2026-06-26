@@ -110,7 +110,8 @@
       lastScrollY = window.scrollY;
     });
 
-    const API_DIRECT = 'https://suitmedia-backend.suitdev.com/api/ideas';
+    const PROXY_URL = 'https://api.allorigins.win/get?url=';
+    const TARGET_API = 'https://suitmedia-backend.suitdev.com/api/ideas';
 
     const urlParams = new URLSearchParams(window.location.search);
     let currentPage = parseInt(urlParams.get('page')) || 1;
@@ -137,17 +138,14 @@
       `;
       
       try {
-        const url = `${API_DIRECT}?page[number]=${currentPage}&page[size]=${pageSize}&append[]=small_image&append[]=medium_image&sort=${currentSort}`;
-        const response = await fetch(url, {
-          method: 'GET',
-          mode: 'cors',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-        });
+        const targetUrl = `${TARGET_API}?page[number]=${currentPage}&page[size]=${pageSize}&append[]=small_image&append[]=medium_image&sort=${currentSort}`;
+        const fullUrl = `${PROXY_URL}${encodeURIComponent(targetUrl)}`;
+        
+        const response = await fetch(fullUrl);
         if (!response.ok) throw new Error('Network response was not ok');
-        const resData = await response.json();
+        const proxyData = await response.json();
+        
+        const resData = JSON.parse(proxyData.contents);
         
         const posts = resData.data || [];
         const meta = resData.meta || { total: 0, last_page: 1 };
