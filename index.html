@@ -165,9 +165,14 @@
       }
 
       postsContainer.innerHTML = posts.map(post => {
-        const smallImg = post.append && post.append.small_image ? post.append.small_image : null;
-        const mediumImg = post.append && post.append.medium_image ? post.append.medium_image : null;
-        const imageUrl = mediumImg || smallImg || 'https://via.placeholder.com/400x250?text=No+Image';
+        let imageUrl = 'https://via.placeholder.com/400x250?text=No+Image';
+        if (post.medium_image) {
+          imageUrl = post.medium_image;
+        } else if (post.small_image) {
+          imageUrl = post.small_image;
+        } else if (post.append) {
+          imageUrl = post.append.medium_image || post.append.small_image || imageUrl;
+        }
 
         const formattedDate = new Date(post.published_at || post.created_at).toLocaleDateString('id-ID', {
           year: 'numeric',
