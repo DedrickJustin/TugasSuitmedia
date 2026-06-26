@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Suitmedia Ideas List</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .banner-clip {
+      clip-path: polygon(0 0, 100% 0, 100% 75%, 0 100%);
+    }
+    header {
+      transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans">
+
+  <header id="main-header" class="fixed top-0 left-0 w-full z-50 bg-orange-500 text-white shadow-md py-4 px-6 md:px-12 flex justify-between items-center">
+    <div class="text-2xl font-bold tracking-wider">SUITMEDIA</div>
+    <nav>
+      <ul class="flex space-x-6 font-medium">
+        <li><a href="#" class="hover:text-orange-200 transition">Home</a></li>
+        <li><a href="#" class="border-b-2 border-white pb-1">Ideas</a></li> <li><a href="#" class="hover:text-orange-200 transition">Careers</a></li>
+        <li><a href="#" class="hover:text-orange-200 transition">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <div class="relative w-full h-[450px] overflow-hidden banner-clip bg-gray-900 mt-0">
+    <img 
+      id="parallax-bg" 
+      src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070" 
+      alt="Banner Background" 
+      class="absolute top-0 left-0 w-full h-[120%] object-cover opacity-60 will-change-transform"
+    >
+    <div id="parallax-text" class="absolute inset-0 flex flex-col justify-center items-center text-center text-white px-4 will-change-transform">
+      <h1 class="text-4xl md:text-5xl font-extrabold mb-2 drop-shadow-md">Ideas</h1>
+      <p class="text-lg md:text-xl font-light drop-shadow-sm">Where any great journey begins</p>
+    </div>
+  </div>
+
+  <main class="max-w-7xl mx-auto px-4 md:px-8 py-12">
+    
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 bg-white p-4 rounded-xl shadow-sm">
+      <div id="showing-meta" class="text-gray-600 font-medium">
+        Showing 1 - 10 of 0
+      </div>
+      
+      <div class="flex flex-wrap items-center gap-6">
+        <div class="flex items-center space-x-2">
+          <label for="show-per-page" class="text-sm font-medium text-gray-600">Show per page:</label>
+          <select id="show-per-page" class="border rounded-lg px-3 py-1.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500">
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+          </select>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <label for="sort-by" class="text-sm font-medium text-gray-600">Sort by:</label>
+          <select id="sort-by" class="border rounded-lg px-3 py-1.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500">
+            <option value="-published_at">Terbaru</option>
+            <option value="published_at">Terlama</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div id="posts-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div class="animate-pulse bg-white rounded-xl shadow-md overflow-hidden h-80"></div>
+      <div class="animate-pulse bg-white rounded-xl shadow-md overflow-hidden h-80"></div>
+      <div class="animate-pulse bg-white rounded-xl shadow-md overflow-hidden h-80"></div>
+      <div class="animate-pulse bg-white rounded-xl shadow-md overflow-hidden h-80"></div>
+    </div>
+
+    <div id="pagination-container" class="flex justify-center items-center space-x-2 mt-12">
+      </div>
+
+  </main>
+
+  <script>
+    let lastScrollY = window.scrollY;
+    const header = document.getElementById('main-header');
+
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > lastScrollY && window.scrollY > 100) {
+        header.style.transform = 'translateY(-100%)';
+      } else {
+        header.style.transform = 'translateY(0)';
+        if (window.scrollY > 50) {
+          header.style.backgroundColor = 'rgba(249, 115, 22, 0.85)';
+          header.style.backdropFilter = 'blur(8px)';
+        } else {
+          header.style.backgroundColor = 'rgba(249, 115, 22, 1)';
+          header.style.backdropFilter = 'none';
+        }
+      }
+
+      const scrolled = window.scrollY;
+      const parallaxBg = document.getElementById('parallax-bg');
+      const parallaxText = document.getElementById('parallax-text');
+      
+      if (scrolled <= 500) {
+        parallaxBg.style.transform = `translateY(${scrolled * 0.4}px)`;
+        parallaxText.style.transform = `translateY(${scrolled * 0.25}px)`;
+      }
+
+      lastScrollY = window.scrollY;
+    });
+
+    const API_BASE = 'https://cors-anywhere.herokuapp.com/https://suitmedia-backend.suitdev.com/api/ideas';
+    const API_DIRECT = 'https://suitmedia-backend.suitdev.com/api/ideas';
+
+    const urlParams = new URLSearchParams(window.location.search);
+    let currentPage = parseInt(urlParams.get('page')) || 1;
+    let pageSize = parseInt(urlParams.get('size')) || 10;
+    let currentSort = urlParams.get('sort') || '-published_at';
+
+    const showPerPageSelect = document.getElementById('show-per-page');
+    const sortBySelect = document.getElementById('sort-by');
+    const postsContainer = document.getElementById('posts-container');
+    const paginationContainer = document.getElementById('pagination-container');
+    const showingMeta = document.getElementById('showing-meta');
+
+    showPerPageSelect.value = pageSize;
+    sortBySelect.value = currentSort;
+
+    function updateURLParams() {
+      const newUrl = `${window.location.pathname}?page=${currentPage}&size=${pageSize}&sort=${currentSort}`;
+      window.history.pushState({ path: newUrl }, '', newUrl);
+    }
+
+    async function fetchPosts() {
+      postsContainer.innerHTML = `
+        <div class="col-span-full text-center py-12 text-gray-500 font-medium">Loading items...</div>
+      `;
+      
+      try {
+        const url = `${API_DIRECT}?page[number]=${currentPage}&page[size]=${pageSize}&append[]=small_image&append[]=medium_image&sort=${currentSort}`;
+        
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Network response was not ok');
+        const resData = await response.json();
+        
+        renderPosts(resData.data);
+        renderPagination(resData.meta);
+        updateMetaText(resData.meta);
+      } catch (error) {
+        console.error('Fetch error:', error);
+        postsContainer.innerHTML = `
+          <div class="col-span-full text-center py-12 text-red-500 font-medium">
+            Gagal memuat data. <br> <span class="text-xs text-gray-400">Pastikan tidak ada kendala CORS atau aktifkan CORS extension pada browser Anda.</span>
+          </div>
+        `;
+      }
+    }
+
+    function renderPosts(posts) {
+      if (!posts || posts.length === 0) {
+        postsContainer.innerHTML = `<div class="col-span-full text-center py-12 text-gray-500">No ideas found.</div>`;
+        return;
+      }
+
+      postsContainer.innerHTML = posts.map(post => {
+
+        const imageUrl = post.medium_image || post.small_image || 'https://via.placeholder.com/400x250?text=No+Image';
+
+        const formattedDate = new Date(post.published_at).toLocaleDateString('id-ID', {
+          year: 'numeric',
+          month: 'LONG',
+          day: 'numeric'
+        });
+
+        return `
+          <div class="bg-white rounded-xl shadow-md overflow-hidden flex flex-col hover:shadow-lg transition duration-300">
+            <div class="relative pt-[56.25%] bg-gray-100 overflow-hidden">
+              <img 
+                src="${imageUrl}" 
+                alt="${post.title}" 
+                loading="lazy"
+                class="absolute top-0 left-0 w-full h-full object-cover hover:scale-105 transition duration-500"
+              >
+            </div>
+            <div class="p-5 flex flex-col flex-grow">
+              <span class="text-xs font-bold text-orange-500 uppercase tracking-wide mb-1">${formattedDate}</span>
+              <h2 class="text-gray-900 font-semibold text-base mb-2 line-clamp-3 leading-snug flex-grow" title="${post.title}">
+                ${post.title}
+              </h2>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Render Komponen Pagination
+    function renderPagination(meta) {
+      const totalPages = meta.last_page || Math.ceil(meta.total / pageSize);
+      let html = '';
+
+      html += `
+        <button ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})" class="px-3 py-1.5 rounded-lg border text-sm font-medium ${currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}">
+          &laquo;
+        </button>
+      `;
+
+      for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+          html += `
+            <button onclick="changePage(${i})" class="px-3 py-1.5 rounded-lg text-sm font-medium border ${currentPage === i ? 'bg-orange-500 text-white border-orange-500' : 'text-gray-600 hover:bg-gray-100'}">
+              ${i}
+            </button>
+          `;
+        } else if (i === currentPage - 2 || i === currentPage + 2) {
+          html += `<span class="text-gray-400 px-1">...</span>`;
+        }
+      }
+
+      html += `
+        <button ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})" class="px-3 py-1.5 rounded-lg border text-sm font-medium ${currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}">
+          &raquo;
+        </button>
+      `;
+
+      paginationContainer.innerHTML = html;
+    }
+
+    function updateMetaText(meta) {
+      const from = (currentPage - 1) * pageSize + 1;
+      const to = Math.min(currentPage * pageSize, meta.total);
+      showingMeta.textContent = `Showing ${from} - ${to} of ${meta.total}`;
+    }
+
+    window.changePage = function(page) {
+      currentPage = page;
+      updateURLParams();
+      fetchPosts();
+      window.scrollTo({ top: 400, behavior: 'smooth' });
+    };
+
+    showPerPageSelect.addEventListener('change', (e) => {
+      pageSize = parseInt(e.target.value);
+      currentPage = 1;
+      updateURLParams();
+      fetchPosts();
+    });
+
+    sortBySelect.addEventListener('change', (e) => {
+      currentSort = e.target.value;
+      updateURLParams();
+      fetchPosts();
+    });
+
+    fetchPosts();
+  </script>
+</body>
+</html>
