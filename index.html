@@ -109,8 +109,8 @@
       lastScrollY = window.scrollY;
     });
 
-    const API_BASE = 'https://cors-anywhere.herokuapp.com/https://suitmedia-backend.suitdev.com/api/ideas';
-    const API_DIRECT = 'https://suitmedia-backend.suitdev.com/api/ideas';
+    const API_BASE = '/api/ideas';
+    const API_DIRECT = '/api/ideas';
 
     const urlParams = new URLSearchParams(window.location.search);
     let currentPage = parseInt(urlParams.get('page')) || 1;
