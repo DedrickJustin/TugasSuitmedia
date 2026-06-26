@@ -174,11 +174,10 @@
       postsContainer.innerHTML = posts.map(post => {
         let imageUrl = 'https://via.placeholder.com/400x250?text=No+Image';
         if (post.medium_image && post.medium_image.length > 0) {
-        imageUrl = post.medium_image[0].url;
+        imageUrl = post.medium_image[0].url.replace('https://assets.suitdev.com', '/assets');
         } else if (post.small_image && post.small_image.length > 0) {
-        imageUrl = post.small_image[0].url;
+        imageUrl = post.small_image[0].url.replace('https://assets.suitdev.com', '/assets');
         }
-
         const formattedDate = new Date(post.published_at || post.created_at).toLocaleDateString('id-ID', {
           year: 'numeric',
           month: 'long',
